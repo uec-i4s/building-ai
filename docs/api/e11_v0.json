@@ -1,0 +1,86 @@
+{
+  "openapi": "3.0.1",
+  "info": {
+    "title": "RESTfulAPIwrapper",
+    "version": "1.0"
+  },
+  "paths": {
+    "/webapi/{endpoint}": {
+      "get": {
+        "tags": [
+          "RESTfulAPIwrapper"
+        ],
+        "summary": "エンドポイントから計測値や運転状態の取得を行う",
+        "description": "\r\n## GETによるBACnetデータ取得\r\n{endpoint}の階層は/{系統}/{deviceid}/{points}|{commands}/{pointKey}|{controlKey}\r\n\r\n<details>\r\n<summary> 1. エンドポイント階層構成 </summary>\r\n\r\n    - /(root)\r\n      - BACnet iCONT の[系統]をリスト\r\n    - /{系統}\r\n      - iCONT の系統配下の {deviceId} をリスト\r\n    - /{系統}/{deviceId}\r\n      - {deviceId} の pointKey, controlKey をリスト\r\n    - /{系統}/{deviceId}/points\r\n      - {deviceId} の pointKey をリスト\r\n    - /{系統}/{deviceId}/commands\r\n      - {deviceId} の controlKey をリスト\r\n    - /{系統}/{deviceId}/points/{pointKey}\r\n      - BACnet から値を取得\r\n    - /{系統}/{deviceId}/commands/{controlKey}\r\n      - BACnet から値を取得\r\n</details>\r\n\r\n<details>\r\n<summary> 2. BACnet iCONT(B-BC)のDevice Instance区分を{系統}として分類する </summary>\r\n\r\n    - {系統}（対象設備系統：BACnetコントローラ）\r\n      - 空調\r\n        - HVAC01     空調機\r\n        - VENT01     全熱交換器\r\n      - 照明\r\n        - LIGHT01    1階照明系統（照明と人感センサ）\r\n        - LIGHT02    2階照明系統（照明と人感センサ）\r\n        - LIGHT03    3階照明系統（照明と人感センサ）\r\n      - センサー\r\n        - SENS01     センサー(1階:温湿度CO2,放射温度)\r\n        - SENS02     センサー(1-3階:電力量、2階:温湿度CO2)\r\n</details>\r\n\r\n<details>\r\n<summary> 3. {系統}配下に配置される設備毎に{deviceId}が付与される </summary>\r\n\r\n    - {deviceId}の構成は[棟][階][部屋][設備]\r\n      - [棟] (対象建物)\r\n        - E11           東11号館 eNexusu棟\r\n\r\n      - [階] (設備設置階)\r\n        - F01           1階\r\n        - F02           2階\r\n        - F03           3階\r\n\r\n      - [部屋] (部屋名や受電系統などのゾーン区分名称)\r\n        - HALL1         エントランスホール\r\n        - CWS1          コワーキングスペース\r\n        - STG1          倉庫\r\n        - COR1          廊下\r\n        - EXT1          外構\r\n        - KIT1          給湯室\r\n        - LAB1          共同研究実験室１\r\n        - LAB2          共同研究実験室２\r\n        - LAB3          共同研究実験室３\r\n        - POC1          実証実験室１\r\n        - POC2          実証実験室２\r\n        - POC3          実証実験室３\r\n        - CMR1          前室中央監視室\r\n        - SVR1          サーバー室\r\n        - EVH1          EVホール\r\n        - MTG1          会議室１\r\n        - MTG2          会議室２\r\n        - ROOF1         屋上\r\n        - ATR1          階段吹抜け\r\n        - EPSxL1        x階 EPS室 照明分電盤\r\n        - EPSxP1        x階 EPS室 動力分電盤\r\n        ※電力量など部屋設備に紐づかない設備に関しては受電系統。\r\n\r\n      - [設備] (nnn：＋同じ部屋に設置された同一設備の区別連番)\r\n        - AIRCONnnn     　　空調 \r\n        - ERVnnn        　　換気 \r\n        - LIGHTnnn      　　照明\r\n        - HDSnnn        　　人感\r\n        - IAQMONITORnnn 　　温湿度CO2\r\n        - TRADnnn       　　放射温度\r\n        - WHMETERnnn    　　電力量計\r\n</details>\r\n\r\n<details>\r\n<summary> 4. コマンド：{pointKey}と{controlKey} </summary>\r\n\r\n    - {deviceId}が持つ値(信号種別)\r\n      - power           　　発停・点灯消灯\r\n      - mode            　　モード    \r\n      - fanspeed            風量\r\n      - temp                室温計測\r\n      - humidity            湿度計測\r\n      - co2                 CO2濃度計測\r\n      - tempset             室温設定\r\n      - dimmer              照明調光\r\n      - detection           人感センサー検知\r\n      - radtemp             放射温度計測\r\n      - powerconsumption    電力量    \r\n      - controlstop         人感センサ照明連動    \r\n</details>\r\n\r\n<details>\r\n<summary> 5. GET レスポンス仕様（Result オブジェクト） </summary>\r\n\r\n    - Request               呼び出されたエンドポイント\r\n    - ReadValue\t            取得値（無応答の場合は \"N/R\"）\r\n    - Name\t                管理点名\r\n    - Type\t                管理点種別\r\n    - RangeLo\t            レンジ下限値\r\n    - RangeHi\t            レンジ上限値\r\n    - Comment               説明\r\n    - EquipmentSystemList   系統（iCONT）\r\n    - EquipmentDeviceList\t{deviceId}\r\n    - PointKey\t            {deviceId} の pointKey\r\n    - ControlKey\t        {deviceId} の controlKey\r\n    - ErrorType\t            エラー種類\r\n    - ErrorMessage\t        エラー発生原因\r\n</details>\r\n    ",
+        "operationId": "GetData",
+        "parameters": [
+          {
+            "name": "endpoint",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "default": "root"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "RESTfulAPIwrapper"
+        ],
+        "summary": "エンドポイントに値を設定する",
+        "description": "\r\n## PUTによるBACnetデータ設定\r\n{endpoint}の階層は/{系統}/{deviceid}/commands　設定対象と値はBodyに設定\r\n\r\n<details>\r\n<summary> 1. エンドポイントへの書込みとBODYの内容 </summary>\r\n\r\n    - /{系統}/{deviceId}/commands\r\n      - BODYに書込み内容を設定してリクエストする\r\n        - command　操作を行う{deviceId}の{controlKey}を設定 (string)\r\n        - value\t{deviceId}の{controlKey}に対して設定を行う値 (string)\r\n  \r\n</details>\r\n<details>\r\n<summary> 2. エンドポイント階層構成 </summary>\r\n\r\n    - /{系統}/{deviceId}/commands\r\n      - {系統}（対象設備系統：BACnetコントローラ）\r\n        - 空調\r\n          - HVAC01       空調機\r\n          - VENT01       全熱交換器\r\n          - 照明\r\n            - LIGHT01    1階照明系統（照明と人感センサ）\r\n            - LIGHT02    2階照明系統（照明と人感センサ）\r\n            - LIGHT03    3階照明系統（照明と人感センサ）\r\n\r\n      - {deviceID}:[棟][階][部屋][設備]\r\n        - [棟] (対象建物)\r\n          - E11           東11号館 eNexusu棟\r\n\r\n        - [階] (設備設置階)\r\n          - F01           1階\r\n          - F02           2階\r\n          - F03           3階\r\n\r\n        - [部屋] (部屋名や受電系統などのゾーン区分名称)\r\n          - HALL1         エントランスホール\r\n          - CWS1          コワーキングスペース\r\n          - STG1          倉庫\r\n          - COR1          廊下\r\n          - EXT1          外構\r\n          - KIT1          給湯室\r\n          - LAB1          共同研究実験室１\r\n          - LAB2          共同研究実験室２\r\n          - LAB3          共同研究実験室３\r\n          - POC1          実証実験室１\r\n          - POC2          実証実験室２\r\n          - POC3          実証実験室３\r\n          - CMR1          前室中央監視室\r\n          - SVR1          サーバー室\r\n          - EVH1          EVホール\r\n          - MTG1          会議室１\r\n          - MTG2          会議室２\r\n          - ROOF1         屋上\r\n          - ATR1          階段吹抜け\r\n\r\n        - [設備] (nnn：＋同じ部屋に設置された同一設備の区別連番)\r\n          - AIRCONnnn     空調 \r\n          - ERVnnn        換気 \r\n          - LIGHTnnn      照明\r\n</details>\r\n<details>\r\n<summary> 3. コマンド：{controlKey} </summary>\r\n\r\n    - {deviceId}が持つ値(信号種別)\r\n      - power             発停・点灯消灯\r\n      - mode              モード    \r\n      - fanspeed          風量\r\n      - tempset           室温設定\r\n      - dimmer            照明調光\r\n      - controlstop       人感センサ照明連動\r\n</details>\r\n    ",
+        "operationId": "PutData",
+        "parameters": [
+          {
+            "name": "endpoint",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BodyData"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "BodyData": {
+        "type": "object",
+        "properties": {
+          "command": {
+            "type": "string",
+            "nullable": true
+          },
+          "value": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      }
+    }
+  }
+}

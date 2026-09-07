@@ -1,0 +1,50 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(**)",
+      "Write(**)",
+      "Edit(**)",
+      "Bash(git *)",
+      "Bash(docker *)",
+      "Bash(uv *)",
+      "Bash(npm *)",
+      "Bash(npx *)",
+      "Bash(node *)",
+      "Bash(python3 *)",
+      "Bash(pytest *)",
+      "Bash(ls *)",
+      "Bash(cat *)",
+      "Bash(mkdir *)",
+      "Bash(cp *)",
+      "Bash(mv *)",
+      "Bash(chmod *)",
+      "Bash(bash *)",
+      "Bash(sudo apt*)",
+      "Bash(sudo install *)",
+      "Bash(sudo curl -fsSL https://download.docker.com/*)",
+      "Bash(sudo systemctl *)",
+      "Bash(sudo usermod *)",
+      "Bash(curl -fsSL https://astral.sh/*)",
+      "Bash(curl -fsSL https://deb.nodesource.com/*)",
+      "Bash(curl -s * http://192.168.13.10:8080/webapi/*)",
+      "Bash(curl -sk * https://elastic.i4s.uec.ac.jp:9200/*)",
+      "Bash(curl -s * http://genai.i4s.uec.ac.jp:8000/*)"
+    ],
+    "deny": [
+      "Read(.env)",
+      "Write(.env)",
+      "Edit(.env)",
+      "Bash(curl * -X PUT*)",
+      "Bash(curl * -XPUT*)",
+      "Bash(curl * --request PUT*)",
+      "Bash(rm -rf /*)",
+      "Bash(sudo rm *)",
+      "Bash(git push *)",
+      "Bash(git reset --hard*)",
+      "Bash(docker system prune*)",
+      "Bash(docker volume rm*)",
+      "Bash(sudo reboot*)",
+      "Bash(sudo shutdown*)"
+    ]
+  }
+}

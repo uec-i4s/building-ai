@@ -1,0 +1,1697 @@
+{
+  "openapi": "3.0.4",
+  "info": {
+    "title": "UEC East 11 (e-Nexus) Building API v1",
+    "description": "Air conditioning, ventilation, lighting and environmental sensor API for UEC East 11 Building \"e-Nexus\", the campus energy research demonstration facility (v1)",
+    "version": "1.0.0",
+    "license": {
+      "name": "MIT",
+      "url": "https://opensource.org/licenses/MIT"
+    },
+    "contact": {
+      "name": "UEC i4s",
+      "url": "http://i4s.uec.ac.jp"
+    }
+  },
+  "servers": [
+    {
+      "url": "http://openapi.i4s.uec.ac.jp/api/v1/e11",
+      "description": "Production server via API Gateway"
+    },
+    {
+      "url": "http://openapi.i4s.uec.ac.jp:8889/v1/e11",
+      "description": "Development server"
+    }
+  ],
+  "security": [
+    {
+      "apiKeyAuth": []
+    }
+  ],
+  "tags": [
+    {
+      "name": "aircons",
+      "description": "Air conditioner control operations"
+    },
+    {
+      "name": "ventilators",
+      "description": "Energy recovery ventilator control operations"
+    },
+    {
+      "name": "lights",
+      "description": "Lighting control operations"
+    },
+    {
+      "name": "lighting-interlocks",
+      "description": "Occupancy-linked lighting control operations"
+    },
+    {
+      "name": "co2",
+      "description": "CO2 concentration data operations"
+    },
+    {
+      "name": "humidity",
+      "description": "Relative humidity data operations"
+    },
+    {
+      "name": "temperature",
+      "description": "Temperature data operations"
+    },
+    {
+      "name": "radiant-temperature",
+      "description": "Radiant temperature data operations"
+    },
+    {
+      "name": "occupancy",
+      "description": "Occupancy detection data operations"
+    },
+    {
+      "name": "power-consumption",
+      "description": "Power consumption data operations"
+    },
+    {
+      "name": "health",
+      "description": "Health check operations"
+    }
+  ],
+  "paths": {
+    "/health": {
+      "get": {
+        "summary": "Health check endpoint",
+        "description": "Returns the health status of the API server",
+        "operationId": "getHealth",
+        "tags": [
+          "health"
+        ],
+        "responses": {
+          "200": {
+            "description": "Server is healthy",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string",
+                  "example": "OK"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          }
+        }
+      }
+    },
+    "/aircons": {
+      "get": {
+        "tags": [
+          "aircons"
+        ],
+        "summary": "空調ULID一覧を取得する",
+        "operationId": "getAirconDeviceList",
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/DeviceList"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "502": {
+            "$ref": "#/components/responses/BadGateway"
+          }
+        }
+      }
+    },
+    "/aircons/{ulid}": {
+      "get": {
+        "tags": [
+          "aircons"
+        ],
+        "summary": "特定の空調の状態を取得する",
+        "operationId": "getAirconStatus",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/ulid"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AirconStatus"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          },
+          "502": {
+            "$ref": "#/components/responses/BadGateway"
+          },
+          "504": {
+            "$ref": "#/components/responses/GatewayTimeout"
+          }
+        }
+      }
+    },
+    "/aircons/{ulid}/mode": {
+      "put": {
+        "tags": [
+          "aircons"
+        ],
+        "summary": "空調の運転モードを設定する",
+        "description": "mode=0 は運転を停止する。mode≠0 は運転モードを設定した上で運転を開始する。\nmode=0: 運転停止、1: 冷房、2: 暖房、3: 送風、5: ドライ\n",
+        "operationId": "updateAirconMode",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/ulid"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "mode"
+                ],
+                "properties": {
+                  "mode": {
+                    "$ref": "#/components/schemas/AirconMode"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/UpdateSuccess"
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          },
+          "502": {
+            "$ref": "#/components/responses/BadGateway"
+          },
+          "504": {
+            "$ref": "#/components/responses/GatewayTimeout"
+          }
+        }
+      }
+    },
+    "/aircons/{ulid}/temperature": {
+      "put": {
+        "tags": [
+          "aircons"
+        ],
+        "summary": "空調の設定温度を設定する",
+        "description": "17~28℃の範囲で指定",
+        "operationId": "updateAirconTemperature",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/ulid"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "setpoint_temperature"
+                ],
+                "properties": {
+                  "setpoint_temperature": {
+                    "$ref": "#/components/schemas/AirconSetpointTemperature"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/UpdateSuccess"
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          },
+          "502": {
+            "$ref": "#/components/responses/BadGateway"
+          },
+          "504": {
+            "$ref": "#/components/responses/GatewayTimeout"
+          }
+        }
+      }
+    },
+    "/aircons/{ulid}/fan-speed": {
+      "put": {
+        "tags": [
+          "aircons"
+        ],
+        "summary": "空調の風量を設定する",
+        "description": "fan_speed=1: 微弱、2: 強、3: 弱、4: 中、5: 自動",
+        "operationId": "updateAirconFanSpeed",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/ulid"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "fan_speed"
+                ],
+                "properties": {
+                  "fan_speed": {
+                    "$ref": "#/components/schemas/AirconFanSpeed"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/UpdateSuccess"
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          },
+          "502": {
+            "$ref": "#/components/responses/BadGateway"
+          },
+          "504": {
+            "$ref": "#/components/responses/GatewayTimeout"
+          }
+        }
+      }
+    },
+    "/ventilators": {
+      "get": {
+        "tags": [
+          "ventilators"
+        ],
+        "summary": "全熱交換器ULID一覧を取得する",
+        "operationId": "getVentilatorDeviceList",
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/DeviceList"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "502": {
+            "$ref": "#/components/responses/BadGateway"
+          }
+        }
+      }
+    },
+    "/ventilators/{ulid}": {
+      "get": {
+        "tags": [
+          "ventilators"
+        ],
+        "summary": "特定の全熱交換器の状態を取得する",
+        "operationId": "getVentilatorStatus",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/ulid"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VentilatorStatus"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          },
+          "502": {
+            "$ref": "#/components/responses/BadGateway"
+          },
+          "504": {
+            "$ref": "#/components/responses/GatewayTimeout"
+          }
+        }
+      }
+    },
+    "/ventilators/{ulid}/power": {
+      "put": {
+        "tags": [
+          "ventilators"
+        ],
+        "summary": "全熱交換器の運転状態を設定する",
+        "description": "power=1: 停止、2: 運転、3: 24時間換気",
+        "operationId": "updateVentilatorPower",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/ulid"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "power"
+                ],
+                "properties": {
+                  "power": {
+                    "$ref": "#/components/schemas/VentilatorPower"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/UpdateSuccess"
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          },
+          "502": {
+            "$ref": "#/components/responses/BadGateway"
+          },
+          "504": {
+            "$ref": "#/components/responses/GatewayTimeout"
+          }
+        }
+      }
+    },
+    "/ventilators/{ulid}/mode": {
+      "put": {
+        "tags": [
+          "ventilators"
+        ],
+        "summary": "全熱交換器の換気モードを設定する",
+        "description": "mode=1: 熱交換、2: 普通、3: 自動",
+        "operationId": "updateVentilatorMode",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/ulid"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "mode"
+                ],
+                "properties": {
+                  "mode": {
+                    "$ref": "#/components/schemas/VentilatorMode"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/UpdateSuccess"
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          },
+          "502": {
+            "$ref": "#/components/responses/BadGateway"
+          },
+          "504": {
+            "$ref": "#/components/responses/GatewayTimeout"
+          }
+        }
+      }
+    },
+    "/ventilators/{ulid}/fan-speed": {
+      "put": {
+        "tags": [
+          "ventilators"
+        ],
+        "summary": "全熱交換器の風量を設定する",
+        "description": "fan_speed=1: 微弱、2: 強、3: 弱、5: 自動",
+        "operationId": "updateVentilatorFanSpeed",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/ulid"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "fan_speed"
+                ],
+                "properties": {
+                  "fan_speed": {
+                    "$ref": "#/components/schemas/VentilatorFanSpeed"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/UpdateSuccess"
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          },
+          "502": {
+            "$ref": "#/components/responses/BadGateway"
+          },
+          "504": {
+            "$ref": "#/components/responses/GatewayTimeout"
+          }
+        }
+      }
+    },
+    "/lights": {
+      "get": {
+        "tags": [
+          "lights"
+        ],
+        "summary": "照明ULID一覧を取得する",
+        "operationId": "getLightDeviceList",
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/DeviceList"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "502": {
+            "$ref": "#/components/responses/BadGateway"
+          }
+        }
+      }
+    },
+    "/lights/{ulid}": {
+      "get": {
+        "tags": [
+          "lights"
+        ],
+        "summary": "特定の照明の状態を取得する",
+        "operationId": "getLightStatus",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/ulid"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LightStatus"
+                },
+                "example": {
+                  "power": 1,
+                  "brightness": 80
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          },
+          "502": {
+            "$ref": "#/components/responses/BadGateway"
+          },
+          "504": {
+            "$ref": "#/components/responses/GatewayTimeout"
+          }
+        }
+      }
+    },
+    "/lights/{ulid}/power": {
+      "put": {
+        "tags": [
+          "lights"
+        ],
+        "summary": "照明の点灯状態を設定する",
+        "description": "power=0: 消灯、1: 点灯",
+        "operationId": "updateLightPower",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/ulid"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "power"
+                ],
+                "properties": {
+                  "power": {
+                    "$ref": "#/components/schemas/LightPower"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/UpdateSuccess"
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          },
+          "502": {
+            "$ref": "#/components/responses/BadGateway"
+          },
+          "504": {
+            "$ref": "#/components/responses/GatewayTimeout"
+          }
+        }
+      }
+    },
+    "/lights/{ulid}/brightness": {
+      "put": {
+        "tags": [
+          "lights"
+        ],
+        "summary": "照明の調光率を設定する",
+        "description": "調光率を0から100%で指定する",
+        "operationId": "updateLightBrightness",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/ulid"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "brightness"
+                ],
+                "properties": {
+                  "brightness": {
+                    "$ref": "#/components/schemas/LightBrightness"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/UpdateSuccess"
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          },
+          "502": {
+            "$ref": "#/components/responses/BadGateway"
+          },
+          "504": {
+            "$ref": "#/components/responses/GatewayTimeout"
+          }
+        }
+      }
+    },
+    "/lighting-interlocks": {
+      "get": {
+        "tags": [
+          "lighting-interlocks"
+        ],
+        "summary": "照明連動制御ULID一覧を取得する",
+        "operationId": "getLightingInterlockDeviceList",
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/DeviceList"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "502": {
+            "$ref": "#/components/responses/BadGateway"
+          }
+        }
+      }
+    },
+    "/lighting-interlocks/{ulid}": {
+      "get": {
+        "tags": [
+          "lighting-interlocks"
+        ],
+        "summary": "特定の照明連動制御の状態を取得する",
+        "operationId": "getLightingInterlockStatus",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/ulid"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LightingInterlockStatus"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          },
+          "502": {
+            "$ref": "#/components/responses/BadGateway"
+          },
+          "504": {
+            "$ref": "#/components/responses/GatewayTimeout"
+          }
+        }
+      }
+    },
+    "/lighting-interlocks/{ulid}/enabled": {
+      "put": {
+        "tags": [
+          "lighting-interlocks"
+        ],
+        "summary": "人感センサーによる照明連動制御の有効・無効を設定する",
+        "description": "enabled=0: 連動停止、1: 連動動作",
+        "operationId": "updateLightingInterlockEnabled",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/ulid"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "enabled"
+                ],
+                "properties": {
+                  "enabled": {
+                    "$ref": "#/components/schemas/LightingInterlockEnabled"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/UpdateSuccess"
+          },
+          "400": {
+            "$ref": "#/components/responses/BadRequest"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          },
+          "502": {
+            "$ref": "#/components/responses/BadGateway"
+          },
+          "504": {
+            "$ref": "#/components/responses/GatewayTimeout"
+          }
+        }
+      }
+    },
+    "/co2": {
+      "get": {
+        "tags": [
+          "co2"
+        ],
+        "summary": "二酸化炭素濃度の測定点ULID一覧を取得する",
+        "operationId": "getCo2DeviceList",
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/DeviceList"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "502": {
+            "$ref": "#/components/responses/BadGateway"
+          }
+        }
+      }
+    },
+    "/co2/{ulid}": {
+      "get": {
+        "tags": [
+          "co2"
+        ],
+        "summary": "特定の測定点の二酸化炭素濃度を取得する",
+        "operationId": "getCo2Status",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/ulid"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Co2Status"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          },
+          "502": {
+            "$ref": "#/components/responses/BadGateway"
+          },
+          "504": {
+            "$ref": "#/components/responses/GatewayTimeout"
+          }
+        }
+      }
+    },
+    "/humidity": {
+      "get": {
+        "tags": [
+          "humidity"
+        ],
+        "summary": "相対湿度の測定点ULID一覧を取得する",
+        "operationId": "getHumidityDeviceList",
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/DeviceList"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "502": {
+            "$ref": "#/components/responses/BadGateway"
+          }
+        }
+      }
+    },
+    "/humidity/{ulid}": {
+      "get": {
+        "tags": [
+          "humidity"
+        ],
+        "summary": "特定の測定点の相対湿度を取得する",
+        "operationId": "getHumidityStatus",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/ulid"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HumidityStatus"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          },
+          "502": {
+            "$ref": "#/components/responses/BadGateway"
+          },
+          "504": {
+            "$ref": "#/components/responses/GatewayTimeout"
+          }
+        }
+      }
+    },
+    "/temperature": {
+      "get": {
+        "tags": [
+          "temperature"
+        ],
+        "summary": "温度の測定点ULID一覧を取得する",
+        "operationId": "getTemperatureDeviceList",
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/DeviceList"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "502": {
+            "$ref": "#/components/responses/BadGateway"
+          }
+        }
+      }
+    },
+    "/temperature/{ulid}": {
+      "get": {
+        "tags": [
+          "temperature"
+        ],
+        "summary": "特定の測定点の温度を取得する",
+        "description": "空調機の room_temperature とは上流で別の点として扱われる",
+        "operationId": "getTemperatureStatus",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/ulid"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TemperatureStatus"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          },
+          "502": {
+            "$ref": "#/components/responses/BadGateway"
+          },
+          "504": {
+            "$ref": "#/components/responses/GatewayTimeout"
+          }
+        }
+      }
+    },
+    "/radiant-temperature": {
+      "get": {
+        "tags": [
+          "radiant-temperature"
+        ],
+        "summary": "放射温度の測定点ULID一覧を取得する",
+        "operationId": "getRadiantTemperatureDeviceList",
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/DeviceList"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "502": {
+            "$ref": "#/components/responses/BadGateway"
+          }
+        }
+      }
+    },
+    "/radiant-temperature/{ulid}": {
+      "get": {
+        "tags": [
+          "radiant-temperature"
+        ],
+        "summary": "特定の測定点の放射温度を取得する",
+        "operationId": "getRadiantTemperatureStatus",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/ulid"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RadiantTemperatureStatus"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          },
+          "502": {
+            "$ref": "#/components/responses/BadGateway"
+          },
+          "504": {
+            "$ref": "#/components/responses/GatewayTimeout"
+          }
+        }
+      }
+    },
+    "/occupancy": {
+      "get": {
+        "tags": [
+          "occupancy"
+        ],
+        "summary": "人感検知の測定点ULID一覧を取得する",
+        "operationId": "getOccupancyDeviceList",
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/DeviceList"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "502": {
+            "$ref": "#/components/responses/BadGateway"
+          }
+        }
+      }
+    },
+    "/occupancy/{ulid}": {
+      "get": {
+        "tags": [
+          "occupancy"
+        ],
+        "summary": "特定の測定点の人感検知状態を取得する",
+        "operationId": "getOccupancyStatus",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/ulid"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OccupancyStatus"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          },
+          "502": {
+            "$ref": "#/components/responses/BadGateway"
+          },
+          "504": {
+            "$ref": "#/components/responses/GatewayTimeout"
+          }
+        }
+      }
+    },
+    "/power-consumption": {
+      "get": {
+        "tags": [
+          "power-consumption"
+        ],
+        "summary": "電力量の測定点ULID一覧を取得する",
+        "operationId": "getPowerConsumptionDeviceList",
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/DeviceList"
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "502": {
+            "$ref": "#/components/responses/BadGateway"
+          }
+        }
+      }
+    },
+    "/power-consumption/{ulid}": {
+      "get": {
+        "tags": [
+          "power-consumption"
+        ],
+        "summary": "特定の測定点の電力量を取得する",
+        "description": "空調機・全熱交換器・照明回路に付随するものと分電盤単位のものがあり、いずれも本エンドポイントから取得する",
+        "operationId": "getPowerConsumptionStatus",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/ulid"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PowerConsumptionStatus"
+                }
+              }
+            }
+          },
+          "401": {
+            "$ref": "#/components/responses/Unauthorized"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerError"
+          },
+          "502": {
+            "$ref": "#/components/responses/BadGateway"
+          },
+          "504": {
+            "$ref": "#/components/responses/GatewayTimeout"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "apiKeyAuth": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "X-API-Key",
+        "description": "API key authentication",
+        "x-ogen-custom-security": true
+      }
+    },
+    "schemas": {
+      "ErrorResponse": {
+        "type": "object",
+        "required": [
+          "title"
+        ],
+        "properties": {
+          "title": {
+            "type": "string",
+            "description": "人間が読めるエラーの要約",
+            "example": "Unauthorized"
+          },
+          "detail": {
+            "type": "string",
+            "description": "インスタンス固有の詳細説明",
+            "example": "有効な認証トークンが必要です"
+          }
+        }
+      },
+      "DeviceList": {
+        "type": "object",
+        "required": [
+          "devices"
+        ],
+        "properties": {
+          "devices": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "required": [
+                "ulid",
+                "location",
+                "region",
+                "building",
+                "room"
+              ],
+              "properties": {
+                "ulid": {
+                  "type": "string",
+                  "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+                  "example": "01JBGZV7E89TBDXS6Z8HE3A2J6"
+                },
+                "location": {
+                  "type": "string",
+                  "example": "UEC"
+                },
+                "region": {
+                  "type": "string",
+                  "example": "East"
+                },
+                "building": {
+                  "type": "string",
+                  "example": "A"
+                },
+                "room": {
+                  "type": "string",
+                  "example": "A-101"
+                }
+              }
+            }
+          }
+        }
+      },
+      "AirconMode": {
+        "type": "integer",
+        "enum": [
+          0,
+          1,
+          2,
+          3,
+          5
+        ],
+        "example": 1,
+        "description": "運転モード。0:停止 / 1:冷房 / 2:暖房 / 3:送風 / 5:ドライ\n\n0 は運転停止を表す。値の大小に意味は無い。\n"
+      },
+      "AirconFanSpeed": {
+        "type": "integer",
+        "enum": [
+          1,
+          2,
+          3,
+          4,
+          5
+        ],
+        "example": 5,
+        "description": "風量。1:微弱 / 2:強 / 3:弱 / 4:中 / 5:自動\n\n値の大小は風量の強さの順序を表さない。\n"
+      },
+      "AirconSetpointTemperature": {
+        "type": "number",
+        "format": "float",
+        "minimum": 17,
+        "maximum": 28,
+        "example": 24.5,
+        "description": "設定温度（℃）"
+      },
+      "AirconRoomTemperature": {
+        "type": "number",
+        "format": "float",
+        "minimum": -99,
+        "maximum": 99,
+        "example": 27.5,
+        "description": "室内温度（℃）。読み取り専用"
+      },
+      "AirconStatus": {
+        "type": "object",
+        "required": [
+          "mode",
+          "fan_speed",
+          "setpoint_temperature",
+          "room_temperature"
+        ],
+        "properties": {
+          "mode": {
+            "$ref": "#/components/schemas/AirconMode"
+          },
+          "fan_speed": {
+            "$ref": "#/components/schemas/AirconFanSpeed"
+          },
+          "setpoint_temperature": {
+            "$ref": "#/components/schemas/AirconSetpointTemperature"
+          },
+          "room_temperature": {
+            "$ref": "#/components/schemas/AirconRoomTemperature"
+          }
+        }
+      },
+      "UpdateSuccess": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string"
+          }
+        }
+      },
+      "VentilatorPower": {
+        "type": "integer",
+        "enum": [
+          1,
+          2,
+          3
+        ],
+        "example": 1,
+        "description": "運転状態。1:停止 / 2:運転 / 3:24時間換気\n"
+      },
+      "VentilatorMode": {
+        "type": "integer",
+        "enum": [
+          1,
+          2,
+          3
+        ],
+        "example": 3,
+        "description": "換気モード。1:熱交換 / 2:普通 / 3:自動\n"
+      },
+      "VentilatorFanSpeed": {
+        "type": "integer",
+        "enum": [
+          1,
+          2,
+          3,
+          5
+        ],
+        "example": 5,
+        "description": "風量。1:微弱 / 2:強 / 3:弱 / 5:自動\n\n値の大小に意味は無い。空調機の風量とは enum が異なるため相互に変換してはならない。\n"
+      },
+      "VentilatorStatus": {
+        "type": "object",
+        "required": [
+          "power",
+          "mode",
+          "fan_speed"
+        ],
+        "properties": {
+          "power": {
+            "$ref": "#/components/schemas/VentilatorPower"
+          },
+          "mode": {
+            "$ref": "#/components/schemas/VentilatorMode"
+          },
+          "fan_speed": {
+            "$ref": "#/components/schemas/VentilatorFanSpeed"
+          }
+        }
+      },
+      "LightPower": {
+        "type": "integer",
+        "enum": [
+          0,
+          1
+        ],
+        "example": 1,
+        "description": "点灯状態。0:消灯 / 1:点灯\n"
+      },
+      "LightBrightness": {
+        "type": "number",
+        "format": "float",
+        "minimum": 0,
+        "maximum": 100,
+        "example": 80,
+        "description": "調光率（%）"
+      },
+      "LightStatus": {
+        "type": "object",
+        "required": [
+          "power",
+          "brightness"
+        ],
+        "properties": {
+          "power": {
+            "$ref": "#/components/schemas/LightPower"
+          },
+          "brightness": {
+            "$ref": "#/components/schemas/LightBrightness"
+          }
+        }
+      },
+      "LightingInterlockEnabled": {
+        "type": "integer",
+        "enum": [
+          0,
+          1
+        ],
+        "example": 1,
+        "description": "人感センサーによる照明連動制御の状態。0:連動停止 / 1:連動動作\n"
+      },
+      "LightingInterlockStatus": {
+        "type": "object",
+        "required": [
+          "enabled"
+        ],
+        "properties": {
+          "enabled": {
+            "$ref": "#/components/schemas/LightingInterlockEnabled"
+          }
+        }
+      },
+      "Co2": {
+        "type": "number",
+        "format": "float",
+        "example": 447,
+        "description": "二酸化炭素濃度（ppm）"
+      },
+      "Co2Status": {
+        "type": "object",
+        "required": [
+          "co2"
+        ],
+        "properties": {
+          "co2": {
+            "$ref": "#/components/schemas/Co2"
+          }
+        }
+      },
+      "Humidity": {
+        "type": "number",
+        "format": "float",
+        "example": 41.5,
+        "description": "相対湿度（%RH）"
+      },
+      "HumidityStatus": {
+        "type": "object",
+        "required": [
+          "humidity"
+        ],
+        "properties": {
+          "humidity": {
+            "$ref": "#/components/schemas/Humidity"
+          }
+        }
+      },
+      "Temperature": {
+        "type": "number",
+        "format": "float",
+        "example": 25.9,
+        "description": "温度（℃）。空調機の room_temperature とは上流で別の点（別のセンサー）による測定値"
+      },
+      "TemperatureStatus": {
+        "type": "object",
+        "required": [
+          "temperature"
+        ],
+        "properties": {
+          "temperature": {
+            "$ref": "#/components/schemas/Temperature"
+          }
+        }
+      },
+      "RadiantTemperature": {
+        "type": "number",
+        "format": "float",
+        "example": 23.4125,
+        "description": "放射温度（℃）"
+      },
+      "RadiantTemperatureStatus": {
+        "type": "object",
+        "required": [
+          "radiant_temperature"
+        ],
+        "properties": {
+          "radiant_temperature": {
+            "$ref": "#/components/schemas/RadiantTemperature"
+          }
+        }
+      },
+      "Occupancy": {
+        "type": "integer",
+        "enum": [
+          0,
+          1
+        ],
+        "example": 0,
+        "description": "人感センサーの検知状態。0:未検知 / 1:検知\n"
+      },
+      "OccupancyStatus": {
+        "type": "object",
+        "required": [
+          "occupancy"
+        ],
+        "properties": {
+          "occupancy": {
+            "$ref": "#/components/schemas/Occupancy"
+          }
+        }
+      },
+      "PowerConsumption": {
+        "type": "number",
+        "format": "double",
+        "example": 43224,
+        "description": "電力量の積算値。瞬時値ではないため、期間あたりの消費量は2時点の差分を取る"
+      },
+      "PowerConsumptionStatus": {
+        "type": "object",
+        "required": [
+          "power_consumption"
+        ],
+        "properties": {
+          "power_consumption": {
+            "$ref": "#/components/schemas/PowerConsumption"
+          }
+        }
+      }
+    },
+    "responses": {
+      "Unauthorized": {
+        "description": "Unauthorized",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse"
+            },
+            "example": {
+              "title": "Unauthorized",
+              "detail": "認証情報が不足しています"
+            }
+          }
+        }
+      },
+      "DeviceList": {
+        "description": "Successful response",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/DeviceList"
+            }
+          }
+        }
+      },
+      "BadGateway": {
+        "description": "Bad Gateway",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse"
+            },
+            "example": {
+              "title": "Bad Gateway",
+              "detail": "外部サービスとの通信に失敗しました"
+            }
+          }
+        }
+      },
+      "NotFound": {
+        "description": "Not Found",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse"
+            },
+            "example": {
+              "title": "Not Found",
+              "detail": "指定されたULIDのデバイスが見つかりません"
+            }
+          }
+        }
+      },
+      "InternalServerError": {
+        "description": "Internal Server Error",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse"
+            },
+            "example": {
+              "title": "Internal Server Error",
+              "detail": "サーバー内部でエラーが発生しました"
+            }
+          }
+        }
+      },
+      "GatewayTimeout": {
+        "description": "Gateway Timeout",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse"
+            },
+            "example": {
+              "title": "Gateway Timeout",
+              "detail": "外部サービスからの応答がタイムアウトしました"
+            }
+          }
+        }
+      },
+      "UpdateSuccess": {
+        "description": "Successful response",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/UpdateSuccess"
+            }
+          }
+        }
+      },
+      "BadRequest": {
+        "description": "Bad Request",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/ErrorResponse"
+            },
+            "example": {
+              "title": "Bad Request",
+              "detail": "リクエストの形式が正しくありません"
+            }
+          }
+        }
+      }
+    },
+    "parameters": {
+      "ulid": {
+        "name": "ulid",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string",
+          "pattern": "^[0-9A-HJKMNP-TV-Z]{26}$",
+          "example": "01JBGZV7E89TBDXS6Z8HE3A2J6"
+        },
+        "description": "デバイスのULID"
+      }
+    }
+  }
+}
